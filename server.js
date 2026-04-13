@@ -66,6 +66,20 @@ async function isUsernameValid(username) {
   return true;
 }
 
+// ========== Scribie: check by initials ==========
+async function isInitialsValid(initials) {
+  const { data, error } = await supabase
+    .from('scribie_clients')
+    .select('*')
+    .eq('initials', initials)
+    .single();
+  if (error || !data) return false;
+  if (!data.is_active) return false;
+  const today = new Date().toISOString().split('T')[0];
+  if (today < data.subscription_start || today > data.subscription_end) return false;
+  return true;
+}
+
 // HMAC signature helper
 function sign(data) {
   return crypto.createHmac('sha256', SECRET).update(data).digest('hex');
@@ -98,6 +112,16 @@ app.get('/check-datagain', async (req, res) => {
   const valid = await isUsernameValid(username);
   const timestamp = Date.now();
   const dataToSign = `${username}:${valid}:${timestamp}`;
+  const signature = sign(dataToSign);
+  res.json({ valid, timestamp, signature });
+});
+
+app.get('/check-scribie', async (req, res) => {
+  const initials = req.query.initials;
+  if (!initials) return res.status(400).json({ error: 'Missing initials' });
+  const valid = await isInitialsValid(initials);
+  const timestamp = Date.now();
+  const dataToSign = `${initials}:${valid}:${timestamp}`;
   const signature = sign(dataToSign);
   res.json({ valid, timestamp, signature });
 });
