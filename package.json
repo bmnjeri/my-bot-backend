@@ -1,0 +1,13 @@
+{
+  "name": "my-bot-backend",
+  "version": "1.0.0",
+  "description": "Backend for FocusForward bot subscription check",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.103.0",
+    "express": "^5.2.1"
+  }
+}
