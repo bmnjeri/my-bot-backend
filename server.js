@@ -80,6 +80,20 @@ async function isInitialsValid(initials) {
   return true;
 }
 
+// ========== TS Auto Claimer: check by account_id ==========
+async function isAccountValid(accountId) {
+  const { data, error } = await supabase
+    .from('ts_clients')
+    .select('*')
+    .eq('account_id', accountId)
+    .single();
+  if (error || !data) return false;
+  if (!data.is_active) return false;
+  const today = new Date().toISOString().split('T')[0];
+  if (today < data.subscription_start || today > data.subscription_end) return false;
+  return true;
+}
+
 // HMAC signature helper
 function sign(data) {
   return crypto.createHmac('sha256', SECRET).update(data).digest('hex');
@@ -122,6 +136,16 @@ app.get('/check-scribie', async (req, res) => {
   const valid = await isInitialsValid(initials);
   const timestamp = Date.now();
   const dataToSign = `${initials}:${valid}:${timestamp}`;
+  const signature = sign(dataToSign);
+  res.json({ valid, timestamp, signature });
+});
+
+app.get('/check-ts', async (req, res) => {
+  const accountId = req.query.account_id;
+  if (!accountId) return res.status(400).json({ error: 'Missing account_id' });
+  const valid = await isAccountValid(accountId);
+  const timestamp = Date.now();
+  const dataToSign = `${accountId}:${valid}:${timestamp}`;
   const signature = sign(dataToSign);
   res.json({ valid, timestamp, signature });
 });
