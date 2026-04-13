@@ -4,6 +4,17 @@ const { createClient } = require('@supabase/supabase-js');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// 👇 ADD THIS – CORS middleware (allow any origin)
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+  if (req.method === 'OPTIONS') {
+    res.sendStatus(200);
+  } else {
+    next();
+  }
+});
+
 const SUPABASE_URL = 'https://osvjixhymjbasfasprzz.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9zdmppeGh5bWpiYXNmYXNwcnp6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM5MTc0OTksImV4cCI6MjA4OTQ5MzQ5OX0.qs0rFF-Fl-j2x4YcgSC9-3_X0OcBiANzrbbvAPq4RlM';
 
